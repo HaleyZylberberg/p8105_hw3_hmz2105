@@ -48,8 +48,9 @@ ggplot(Demographic_df, aes(x = education, fill = sex)) +
        y = "Count") +
   viridis::scale_fill_viridis(
     name = "Education", 
-    discrete = TRUE) |>
-  theme_minimal()
+    discrete = TRUE) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
 ```
 
 Next, import and tidy accelerometer data.
