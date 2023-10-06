@@ -8,4 +8,54 @@ output: github_document
 library (tidyverse)
 ```
 
-##
+##Problem 2
+
+```{r call in data for problem 2}
+library (p8105.datasets)
+brfss_smart2010
+```
+
+
+##Problem 3
+
+This problem includes data from NHANES regarding participant demographic information and accelerometer data.
+
+Import demographic data. Skip first 4 rows as they are notes. Remove participants younger than 21 and those with missing data. Recode sex as 1= male and 2= female and education as 1=less than high school, 2= high school, 3=more than high school. Next convert education to a factor.
+
+```{r import and tidy demographic data}
+Demographic_df = 
+  read_csv("data/nhanes_covar.csv", skip = 4) |> 
+  janitor::clean_names()|>
+  filter(age > 21) |>
+  drop_na() |>
+  mutate(
+ sex = case_match(
+    sex, 2~ 'female', 1 ~ 'male'),
+ education = case_match(
+   education, 1 ~ "less than high school", 2 ~ "high school", 3~ "more than high school")) |> mutate (education = as.factor(education))
+```
+
+```{r practice making graphs}
+Demographic_df |> 
+  group_by(sex, education) |> 
+  janitor::tabyl(sex, education) |> 
+  knitr::kable(digits = 2)
+
+ggplot(Demographic_df, aes(x = education, fill = sex)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Count of Men and Women by Education Level",
+       x = "Education Level",
+       y = "Count") +
+  viridis::scale_fill_viridis(
+    name = "Education", 
+    discrete = TRUE) |>
+  theme_minimal()
+```
+
+Next, import and tidy accelerometer data.
+
+```{r import and tidy accelerometer data}
+accel_df = 
+  read_csv("data/nhanes_accel.csv")|> 
+  janitor::clean_names()
+```
