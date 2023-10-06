@@ -35,13 +35,30 @@ Demographic_df =
    education, 1 ~ "less than high school", 2 ~ "high school", 3~ "more than high school")) |> mutate (education = as.factor(education))
 ```
 
-```{r practice making graphs}
-Demographic_df |> 
+Next, import and tidy accelerometer data.
+
+```{r import and tidy accelerometer data}
+accel_df = 
+  read_csv("data/nhanes_accel.csv")|> 
+  janitor::clean_names() 
+```
+
+Merge datasets.
+
+```{r merge}
+MIMS_df = 
+  inner_join(Demographic_df, accel_df, by="seqn")
+```
+
+Next determine the number of men and women in each education level. Represent this data in both table and visual format.
+
+```{r calculate number of men and women per education level }
+MIMS_df |> 
   group_by(sex, education) |> 
   janitor::tabyl(sex, education) |> 
   knitr::kable(digits = 2)
 
-ggplot(Demographic_df, aes(x = education, fill = sex)) +
+ggplot(MIMS_df, aes(x = education, fill = sex)) +
   geom_bar(position = "dodge") +
   labs(title = "Count of Men and Women by Education Level",
        x = "Education Level",
@@ -53,10 +70,10 @@ ggplot(Demographic_df, aes(x = education, fill = sex)) +
   theme(legend.position = "bottom")
 ```
 
-Next, import and tidy accelerometer data.
+Majority of men and women in this dataset have more than a high school degree (n=59 for women and n=54 for men). More men had less than a high school degree than women (34 vs 23).
 
-```{r import and tidy accelerometer data}
-accel_df = 
-  read_csv("data/nhanes_accel.csv")|> 
-  janitor::clean_names()
+Create a total activity variable for each participant by summing up the accelerometer data for the day.
+
+```{r calculate total_activity variable}
+
 ```
