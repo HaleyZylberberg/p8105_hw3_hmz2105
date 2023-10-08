@@ -35,12 +35,20 @@ Demographic_df =
    education, 1 ~ "less than high school", 2 ~ "high school", 3~ "more than high school")) |> mutate (education = as.factor(education))
 ```
 
-Next, import and tidy accelerometer data.
+Next, import and tidy accelerometer data. As part of tidying will pivot longer.
 
 ```{r import and tidy accelerometer data}
 accel_df = 
   read_csv("data/nhanes_accel.csv")|> 
-  janitor::clean_names() 
+  janitor::clean_names() |>
+   pivot_longer(
+    min1:min1440,
+    names_to = "minute",
+    names_prefix = "min",
+    values_to = "minute_value"
+  ) |>
+     mutate(minute = as.numeric(minute))
+
 ```
 
 Merge datasets.
@@ -54,11 +62,20 @@ Next determine the number of men and women in each education level. Represent th
 
 ```{r calculate number of men and women per education level }
 MIMS_df |> 
+  pivot_wider(
+    names_from = minute,
+    values_from = minute_value
+  ) |>
   group_by(sex, education) |> 
   janitor::tabyl(sex, education) |> 
   knitr::kable(digits = 2)
 
-ggplot(MIMS_df, aes(x = education, fill = sex)) +
+MIMS_df |> 
+  pivot_wider(
+    names_from = minute,
+    values_from = minute_value
+  ) |>
+ggplot(aes(x = education, fill = sex)) +
   geom_bar(position = "dodge") +
   labs(title = "Count of Men and Women by Education Level",
        x = "Education Level",
@@ -72,8 +89,28 @@ ggplot(MIMS_df, aes(x = education, fill = sex)) +
 
 Majority of men and women in this dataset have more than a high school degree (n=59 for women and n=54 for men). More men had less than a high school degree than women (34 vs 23).
 
-Create a total activity variable for each participant by summing up the accelerometer data for the day.
+Next aggregate accelerometer data for each participant and create a variable called total_activity. Next creat a scatter plot of total activity for each participant by age, and compare males to females and also group by education.
 
-```{r calculate total_activity variable}
+```{r aggregate accelerometer data for each participants and plot}
+MIMS_df |> 
+  group_by(seqn) |>
+ mutate(total_activity = sum(minute_value)) |>
+    mutate(education = forcats::fct_relevel(education, c("less than high school", "high school", "more than high school"))) |> 
+  ggplot(aes(x = age, y = total_activity, color = sex)) +
+    geom_point() +
+  geom_smooth() + 
+    facet_grid(~education)
+```
+
+Next aggregate accelerometer data by minute to create a variable of mean activity. Then create a scatter plot of mean activity per minute of the day comparing males to females and geouped by education.
+
+```{r aggregate accelerometer data by minute}
+MIMS_df|>
+  group_by(minute, sex, education) |>
+  summarize(mean_activity = mean(minute_value, na.rm = TRUE)) |>
+   mutate(education = forcats::fct_relevel(education, c("less than high school", "high school", "more than high school"))) |>
+  ggplot(aes(x = minute, y = mean_activity, color = sex)) +
+    geom_point() + geom_smooth() + 
+    facet_grid(~education)
 
 ```
