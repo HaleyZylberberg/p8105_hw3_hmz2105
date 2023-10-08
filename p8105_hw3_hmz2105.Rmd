@@ -8,12 +8,56 @@ output: github_document
 library (tidyverse)
 ```
 
-##Problem 2
+## Problem 2
+
+This problem uses data from the Behavioral Risk Factors Surveillance System for Selected Metropolitan Area Risk Trends (SMART) for 2002-2010. 
+
+First we call in the dataset.
 
 ```{r call in data for problem 2}
 library (p8105.datasets)
-brfss_smart2010
+brfss_smart2010 
 ```
+
+The problem will focus on the response to the question, what is "your general health," which is referred to as overall health, and which has responses ordered from fair to excellent. I will re-format the dataset to use appropriate variable names, and limit it to the overall health topic. Next I will organize the responses as a factor taking levels ordered from “Poor” to “Excellent.”
+
+```{r create and filter brfss dataframe}
+brfss_smart2010_df =
+janitor::clean_names(brfss_smart2010)|>
+  filter(topic == "Overall Health") |>
+  rename(overall_health = response,
+         state = locationabbr,
+        county =  locationdesc) |>
+  mutate(overall_health = forcats::fct_relevel(overall_health, c("Poor", "Fair", "Good", "Very good", "Excellent"))) |>
+  select(year, state, county, overall_health, sample_size, data_value, confidence_limit_low, confidence_limit_high)
+```
+
+Next we will answer which states were observed at 7 or more locations in 2002 and 2010.
+
+These are the states with 7 or more observations in 2002:
+
+```{r states with over 7 locations in 2002}
+brfss_smart2010_df |>
+  filter(year == 2002) |>
+  distinct(state, year, county) |>
+  group_by(state, year) |> 
+  summarize(locations = n()) |>
+  filter(locations >= 7) |>
+  knitr::kable()
+```
+
+These are the states with 7 or more observations in 2010:
+
+```{r states with over 7 locations in 2010}
+brfss_smart2010_df |>
+  filter(year == 2010) |>
+  distinct(state, year, county) |>
+  group_by(state, year) |> 
+  summarize(locations = n()) |>
+  filter(locations >= 7) |>
+  knitr::kable()
+```
+
 
 
 ##Problem 3
