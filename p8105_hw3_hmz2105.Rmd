@@ -22,6 +22,39 @@ library(p8105.datasets)
 data("instacart")
 ```
 
+Next will answer questions regarding aisle information. 
+
+* There are `r instacart |> distinct(aisle_id) |> summarize(aisle_id = n())` aisles in the dataset. 
+
+* The table below shows the 5 aisles that have the most orders (in reverse order), the number of orders, and the aisle names. Aisle 83, which is the fresh vegetable aisle is the most ordered from.
+
+```{r determine most ordered from aisles}
+instacart |>
+  group_by(aisle) |>
+  count(aisle_id, name = "n_obs") |>
+   arrange(n_obs) |>
+  tail(5) |>
+   knitr::kable()
+```
+
+*  Plot the number of items ordered in each aisle, limited to aisles with more than 10000 items ordered. 
+
+```{r plot the number items ordered from aisles}
+instacart |>
+  mutate(aisle_id = as.character(aisle_id)) |>
+  count(aisle_id, name = "n_obs") |>
+  filter (n_obs > 10000) |>
+   ggplot(aes(x = reorder(aisle_id, n_obs), y = n_obs)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Items Ordered From Each Aisle (if greater than 1000 items)",
+       x = "Aisle Number",
+       y = "Number of Items Ordered")  +
+  viridis::scale_fill_viridis(
+    name = "aisle_id", 
+    discrete = TRUE) +
+   theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
 ## Problem 2
 
 This problem uses data from the Behavioral Risk Factors Surveillance System for Selected Metropolitan Area Risk Trends (SMART) for 2002-2010. 
