@@ -58,9 +58,32 @@ brfss_smart2010_df |>
   knitr::kable()
 ```
 
+Next, construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. And then output a “spaghetti” plot of this average value over time within a state.
+
+```{r excellent observations dataset}
+excellent_brfss_smart2010_df =
+  brfss_smart2010_df |>
+  filter(overall_health == "Excellent") |>
+  group_by(year, state) |>
+  summarize (score = mean(data_value)) |>
+  select (year, state, score) 
+
+excellent_brfss_smart2010_df |>
+  ggplot( aes(x = year, y = score)) +
+   geom_line(aes(group=state)) + geom_smooth()
+```
 
 
-##Problem 3
+```{r}
+brfss_smart2010_df|>
+  filter(state == "NY", year == "2006" | year == "2010") |>
+  ggplot(aes(x = county, y=data_value, fill = overall_health)) +
+  geom_bar(stat="identity") +
+  facet_grid(~year)
+
+```
+
+## Problem 3
 
 This problem includes data from NHANES regarding participant demographic information and accelerometer data.
 
