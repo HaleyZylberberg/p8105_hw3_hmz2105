@@ -46,7 +46,8 @@ instacart |>
   filter (n_obs > 10000) |>
    ggplot(aes(x = reorder(aisle_id, n_obs), y = n_obs)) +
   geom_bar(stat = "identity") +
-  labs(title = "Number of Items Ordered From Each Aisle (if greater than 1000 items)",
+  labs(title = "Number of Items Ordered From Each Aisle 
+       (if greater than 1000 items)",
        x = "Aisle Number",
        y = "Number of Items Ordered")  +
   viridis::scale_fill_viridis(
@@ -54,6 +55,42 @@ instacart |>
     discrete = TRUE) +
    theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
+
+Aisles 83 and 24 are the most ordered from aisles, which are the fresh vegetables and fruit aisles. Packaged vegetables and fruits are the next ordered from aisle (123).
+
+* Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+
+```{r table of 3 most popular items in aisles listed above}
+instacart |>
+  filter(aisle =="baking ingredients" | aisle == "dog food care"| aisle == "packaged vegetables fruits") |>
+  group_by(aisle) |>
+  count(product_name, name = "n_obs") |>
+  arrange(desc(n_obs)) |>
+  slice_head(n = 3) |>
+  knitr::kable()
+```
+
+Among baking ingredients, light brown sugar is the most ordered item and was ordered 499 times. Among dog food care, Snack Sticks Chicken & Rice Recipe Dog Treats is the most ordered item and was ordered 30 times. Among packaged vegetables and fruits, organic baby spinach is the most ordere item and was ordered 9,785 times.
+
+* Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+```{r table of mean hour of the day per day of the week for 2 food items}
+instacart |>
+  filter(product_name =="Pink Lady Apples" | product_name == "Coffee Ice Cream") |>
+  group_by(product_name, order_dow) |>
+  summarize (mean_hour = mean(order_hour_of_day)) |>
+   mutate(
+ order_dow = case_match(
+    order_dow, 0~ 'Sunday', 1 ~ 'Monday', 2~'Tuesday', 3~'Wednesday', 4~'Thursday', 5~'Friday', 6~'Saturday')) |>
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  ) |>
+ knitr::kable(digits = 2, caption = "Mean Hour of the Day per Week Day That Items are Ordered")
+```
+
+This table shows that the largest mean hour of the day that Coffee Ice Cream is ordered is the 15.38 hour on Tuesday. The largest mean hour of the day that Pink Lady Apples is ordered is the 14.25 hour on Wednesday. 
+
 
 ## Problem 2
 
@@ -127,13 +164,12 @@ excellent_brfss_smart2010_df |>
    geom_line(aes(group=state)) + geom_smooth() +
   theme(legend.position = "bottom")+
   labs(title = "Mean Proportion Who Responded Excellent to Overall 
-  Health Question by State 
-       Over Time",
+  Health Question by State Over Time",
     x = "Year",  
           y = "Mean Proportion Responded Excellent") 
 ```
 
-This plot shows that from years 2002 through 2010 (which is the duration of the data) the mean proportion of participants who responded "excellent" to the question " How is your overall health" was less than 30 for every state. It seems that the most states have an "excellent" response of about 0.22%. Overall there appears to be a decreasing trend for the "excellent" response over time.  
+This plot shows that from years 2002 through 2010 (which is the duration of the data) the mean proportion of participants who responded "excellent" to the question " How is your overall health" was less than 30 for every state. It seems that most states have an "excellent" response of about 0.22%. Overall there appears to be a decreasing trend for the "excellent" response over time.  
 
 * Next, make a two-panel plot showing, for the years 2006, and 2010, the distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
@@ -162,7 +198,9 @@ This plot shows that among counties in NY, the proportion that responded "Excell
 
 This problem includes data from NHANES regarding participant demographic information and accelerometer data.
 
-Import demographic data. Skip first 4 rows as they are notes. Remove participants younger than 21 and those with missing data. Recode sex as 1= male and 2= female and education as 1=less than high school, 2= high school, 3=more than high school. Next convert education to a factor.
+* Firt, will import, clean, and merge data.
+
+Iimport demographic data. Skip first 4 rows as they are notes. Remove participants younger than 21 and those with missing data. Recode sex as 1= male and 2= female and education as 1=less than high school, 2= high school, 3=more than high school. Make education a factor variable.
 
 ```{r import and tidy demographic data}
 Demographic_df = 
@@ -174,7 +212,8 @@ Demographic_df =
  sex = case_match(
     sex, 2~ 'female', 1 ~ 'male'),
  education = case_match(
-   education, 1 ~ "less than high school", 2 ~ "high school", 3~ "more than high school")) |> mutate (education = as.factor(education))
+   education, 1 ~ "less than high school", 2 ~ "high school", 3~ "more than high school")) |>
+  mutate(education = forcats::fct_relevel(education, c("less than high school", "high school", "more than high school")))
 ```
 
 Next, import and tidy accelerometer data. As part of tidying will pivot longer.
@@ -200,7 +239,7 @@ MIMS_df =
   inner_join(Demographic_df, accel_df, by="seqn")
 ```
 
-Next determine the number of men and women in each education level. Represent this data in both table and visual format.
+* Next determine the number of men and women in each education level. Represent this data in both table and visual format.
 
 ```{r calculate number of men and women per education level }
 MIMS_df |> 
@@ -231,13 +270,12 @@ ggplot(aes(x = education, fill = sex)) +
 
 Majority of men and women in this dataset have more than a high school degree (n=59 for women and n=54 for men). More men had less than a high school degree than women (34 vs 23).
 
-Next aggregate accelerometer data for each participant and create a variable called total_activity. Next create a scatter plot of total activity for each participant by age, and compare males to females and also group by education.
+* Next aggregate accelerometer data for each participant and create a scatter plot of the aggregated accelerometer data for each participant by age, and compare males to females and also group by education.
 
 ```{r aggregate accelerometer data for each participant and plot}
 MIMS_df |> 
   group_by(seqn) |>
  mutate(total_activity = sum(minute_value)) |>
-    mutate(education = forcats::fct_relevel(education, c("less than high school", "high school", "more than high school"))) |> 
   ggplot(aes(x = age, y = total_activity, color = sex)) +
     geom_point() +
   geom_smooth() + 
@@ -250,7 +288,9 @@ MIMS_df |>
           y = "Total Daily Accelerometer Data") 
 ```
 
-Next aggregate accelerometer data by minute to create a variable of mean activity. Then create a scatter plot of mean activity per minute of the day comparing males to females and grouped by education.
+This plot shows that for every education level, females that are young (less than age 40) have higher total daily accelerometer data than males. For people with less than a high school degree, it seems that around age 50, males begin to have higher total daily accelerometer data than females. For the other education levels, females seem to have mostly higher values regardless of age.
+
+* Next aggregate accelerometer data by minute to create a variable of mean activity. Then create a scatter plot of mean activity per minute of the day comparing males to females and grouped by education.
 
 ```{r aggregate accelerometer data by minute}
 MIMS_df|>
@@ -267,3 +307,5 @@ MIMS_df|>
           y = "Mean Accelerometer Value")
 
 ```
+
+This graph shows that for every education level, participants have lower mean accelerometer values earlier in the day (time 0-400), then there is a sharp increase with a peak at time 700, and then the values start to decline. For every education level, it seems that males have slightly higher mean values from time 0-400 but then females have higher mean values than makes for the late time points. 
