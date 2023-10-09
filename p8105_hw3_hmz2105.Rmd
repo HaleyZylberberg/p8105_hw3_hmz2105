@@ -19,8 +19,29 @@ This problem uses data from “The Instacart Online Grocery Shopping Dataset 201
 
 ```{r call in data for problem 1}
 library(p8105.datasets)
-data("instacart")
+data ("instacart")
 ```
+
+The instacart data has `r nrow(instacart)` observations and `r ncol(instacart)` variables. The variables in the dataframe are `r names(instacart)`. The department names are `r unique(instacart[["department"]])`. There are `r instacart |> distinct(order_number) |> summarize(order_number = n())` order numbers. The average day of the week that food is ordered is `r instacart |> pull(order_dow) |> mean ()`.
+
+```{r evaluate dataset, results='hide'}
+instacart |>
+  group_by(product_name) |>
+  count(product_name, name = "n_obs") |>
+   arrange(desc(n_obs)) 
+
+instacart |>
+  group_by(department) |>
+  count(department, name = "n_obs") |>
+   arrange(desc(n_obs)) 
+
+instacart |>
+  group_by(user_id) |>
+  count(user_id, name = "n_obs") |>
+   arrange(desc(n_obs)) 
+```
+
+Bananas are the most ordered product, and was ordered 18726 times. The produce department was the most ordered from, and was ordered from 409,087 times. The user id 149753 ordered the most, with 80 orders.
 
 Next will answer questions regarding aisle information. 
 
