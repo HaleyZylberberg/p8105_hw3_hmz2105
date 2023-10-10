@@ -84,11 +84,12 @@ Aisles 83 and 24 are the most ordered from aisles, which are the fresh vegetable
 ```{r table of 3 most popular items in aisles listed above}
 instacart |>
   filter(aisle =="baking ingredients" | aisle == "dog food care"| aisle == "packaged vegetables fruits") |>
-  group_by(aisle) |>
+  group_by(aisle, product_name) |>
   count(product_name, name = "n_obs") |>
   arrange(desc(n_obs)) |>
   slice_head(n = 3) |>
   knitr::kable()
+
 ```
 
 Among baking ingredients, light brown sugar is the most ordered item and was ordered 499 times. Among dog food care, Snack Sticks Chicken & Rice Recipe Dog Treats is the most ordered item and was ordered 30 times. Among packaged vegetables and fruits, organic baby spinach is the most ordere item and was ordered 9,785 times.
@@ -147,7 +148,7 @@ janitor::clean_names(brfss_smart2010)|>
 ```{r states with over 7 locations in 2002}
 brfss_smart2010_df |>
   filter(year == 2002) |>
-  distinct(state, year, county) |>
+  distinct(state, county) |>
   group_by(state) |> 
   summarize(locations = n()) |>
   filter(locations >= 7) |>
@@ -160,7 +161,7 @@ brfss_smart2010_df |>
 ```{r states with over 7 locations in 2010}
 brfss_smart2010_df |>
   filter(year == 2010) |>
-  distinct(state, year, county) |>
+  distinct(state, county) |>
   group_by(state) |> 
   summarize(locations = n()) |>
   filter(locations >= 7) |>
@@ -190,7 +191,7 @@ excellent_brfss_smart2010_df |>
           y = "Mean Proportion Responded Excellent") 
 ```
 
-This plot shows that from years 2002 through 2010 (which is the duration of the data) the mean proportion of participants who responded "excellent" to the question " How is your overall health" was less than 30 for every state. It seems that most states have an "excellent" response of about 0.22%. Overall there appears to be a decreasing trend for the "excellent" response over time.  
+This plot shows that from years 2002 through 2010 (which is the duration of the data) the mean proportion of participants who responded "excellent" to the question " How is your overall health" was less than 30 for every state. It seems that most states have an "excellent" response of about 22%. Overall there appears to be a decreasing trend for the "excellent" response over time.  
 
 * Next, make a two-panel plot showing, for the years 2006, and 2010, the distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
@@ -299,7 +300,7 @@ MIMS_df |>
  mutate(total_activity = sum(minute_value)) |>
   ggplot(aes(x = age, y = total_activity, color = sex)) +
     geom_point() +
-  geom_smooth() + 
+  geom_smooth(se=FALSE) + 
     facet_grid(~education) +
   theme(legend.position = "bottom")+
   labs(title = "Total Daily Accelerometer Value by Age in Males 
