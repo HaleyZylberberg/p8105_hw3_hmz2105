@@ -84,7 +84,7 @@ Aisles 83 and 24 are the most ordered from aisles, which are the fresh vegetable
 ```{r table of 3 most popular items in aisles listed above}
 instacart |>
   filter(aisle =="baking ingredients" | aisle == "dog food care"| aisle == "packaged vegetables fruits") |>
-  group_by(aisle, product_name) |>
+  group_by(aisle) |>
   count(product_name, name = "n_obs") |>
   arrange(desc(n_obs)) |>
   slice_head(n = 3) |>
